@@ -4,7 +4,7 @@ module Climb.Grades exposing
     , showGrade, toAnyGrade, toFont, toVGrade
     , parseGrade, parseGrade_, fromAnyGrade, fromVGrade, fromFont, toLinearScale, fromLinearScale
     , simplifyGrade, nextGrade
-    , zeroGrade
+    , compareGrades, zeroGrade
     )
 
 {-| Climbing grades representation and conversion
@@ -47,7 +47,7 @@ Required as the first argument of may functions in order to specify the desired 
 
 ## Special methods
 
-@docs zeroGrade
+@docs zeroGrade compareGrades
 
 -}
 
@@ -68,6 +68,7 @@ type alias System t =
     , simplify : t -> t
     , zero : t
     , next : t -> t
+    , order : t -> t -> Order
     }
 
 
@@ -112,6 +113,7 @@ vgrade =
     , simplify = Hueco.simplify
     , zero = Hueco.zero
     , next = Hueco.next
+    , order = Hueco.order
     }
 
 
@@ -126,6 +128,7 @@ font =
     , simplify = Font.simplify
     , zero = Font.zero
     , next = Font.next
+    , order = Font.order
     }
 
 
@@ -140,6 +143,7 @@ us =
     , simplify = Us.simplify
     , zero = Us.zero
     , next = Us.next
+    , order = Us.order
     }
 
 
@@ -154,6 +158,7 @@ fr =
     , simplify = Fr.simplify
     , zero = Fr.zero
     , next = Fr.next
+    , order = Fr.order
     }
 
 
@@ -168,6 +173,7 @@ br =
     , simplify = Br.simplify
     , zero = Br.zero
     , next = Br.next
+    , order = Br.order
     }
 
 
@@ -314,6 +320,16 @@ Different scales may start from different levels
 zeroGrade : System a -> a
 zeroGrade tt =
     tt.zero
+
+
+{-| Compare two grades
+
+This can be used in sorting algorithms like `List.sortWith`
+
+-}
+compareGrades : System a -> a -> a -> Order
+compareGrades tt a b =
+    tt.order a b
 
 
 

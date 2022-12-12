@@ -44,3 +44,16 @@ showHalfWay lvl =
 
         C ->
             Nothing
+
+
+toLinearScale : Level -> Float
+toLinearScale lvl =
+    case lvl of
+        A ->
+            0 / 3
+
+        B ->
+            1 / 3
+
+        C ->
+            2 / 3

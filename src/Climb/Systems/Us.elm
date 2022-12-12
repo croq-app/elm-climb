@@ -1,10 +1,10 @@
 module Climb.Systems.Us exposing (..)
 
-import Climb.Levels.Mod exposing (..)
+import Climb.Levels.Mod as Mod
 
 
 type Grade
-    = Grade Int DifficultyMod
+    = Grade Int Mod.DifficultyMod
 
 
 show : Grade -> String
@@ -34,9 +34,14 @@ toLinearScale _ =
 
 zero : Grade
 zero =
-    Grade 0 Base
+    Grade 0 Mod.Base
 
 
 next : Grade -> Grade
 next grade =
     grade
+
+
+order : Grade -> Grade -> Order
+order (Grade a moda) (Grade b modb) =
+    compare ( a, Mod.toLinearScale moda ) ( b, Mod.toLinearScale modb )

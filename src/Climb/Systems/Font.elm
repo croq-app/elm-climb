@@ -1,15 +1,15 @@
 module Climb.Systems.Font exposing (..)
 
-import Climb.Systems.Common exposing (..)
-import Climb.Levels.Mod exposing (..)
 import Climb.Levels.ABC as ABC
 import Climb.Levels.ABCPlus as Lvl
+import Climb.Levels.Mod as Mod
+import Climb.Systems.Common exposing (..)
 
 
 type alias Grade =
     { n : Int
     , cat : Lvl.Level
-    , mod : DifficultyMod
+    , mod : Mod.DifficultyMod
     }
 
 
@@ -32,7 +32,7 @@ parse _ =
 
 simplify : Grade -> Grade
 simplify { n, cat } =
-    Grade n cat Base
+    Grade n cat Mod.Base
 
 
 toLinearScale : Grade -> Float
@@ -47,7 +47,7 @@ fromLinearScale _ =
 
 zero : Grade
 zero =
-    { n = 1, cat = Lvl.A6, mod = Base }
+    { n = 1, cat = Lvl.A6, mod = Mod.Base }
 
 
 next : Grade -> Grade
@@ -68,3 +68,12 @@ next { n, cat, mod } =
 
             Nothing ->
                 Grade (n + 1) Lvl.A6 mod
+
+
+order : Grade -> Grade -> Order
+order a b =
+    let
+        toTuple { n, cat, mod } =
+            ( n, Lvl.toLinearScale cat, Mod.toLinearScale mod )
+    in
+    compare (toTuple a) (toTuple b)

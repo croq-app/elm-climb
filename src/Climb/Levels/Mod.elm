@@ -20,8 +20,13 @@ type ABCDLvl
     | D4
 
 
-showModExt : ( String, String ) -> DifficultyMod -> Maybe String
-showModExt mods mod =
+order : DifficultyMod -> DifficultyMod -> Order
+order a b =
+    compare (toLinearScale a) (toLinearScale b)
+
+
+showExt : ( String, String ) -> DifficultyMod -> Maybe String
+showExt mods mod =
     case mod of
         Base ->
             Just ""
@@ -36,18 +41,18 @@ showModExt mods mod =
             Nothing
 
 
-showMod : DifficultyMod -> Maybe String
-showMod =
-    showModExt ( "-", "+" )
+show : DifficultyMod -> Maybe String
+show =
+    showExt ( "-", "+" )
 
 
 showModSoftHard : DifficultyMod -> Maybe String
 showModSoftHard =
-    showModExt ( " soft", " hard" )
+    showExt ( " soft", " hard" )
 
 
-modToLinearScale : DifficultyMod -> Float
-modToLinearScale mod =
+toLinearScale : DifficultyMod -> Float
+toLinearScale mod =
     case mod of
         Base ->
             0.0
@@ -62,8 +67,8 @@ modToLinearScale mod =
             0.5
 
 
-modFromLinearScale : number -> Float -> ( number, DifficultyMod )
-modFromLinearScale n x =
+fromLinearScale : number -> Float -> ( number, DifficultyMod )
+fromLinearScale n x =
     if x <= -0.2 then
         ( n, Soft )
 

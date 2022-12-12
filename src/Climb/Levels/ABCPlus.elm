@@ -98,3 +98,25 @@ showHalfway cat =
 
         C6Plus ->
             Nothing
+
+
+toLinearScale : Level -> Float
+toLinearScale cat =
+    case cat of
+        A6 ->
+            0 / 6
+
+        A6Plus ->
+            1 / 6
+
+        B6 ->
+            2 / 6
+
+        B6Plus ->
+            3 / 6
+
+        C6 ->
+            4 / 6
+
+        C6Plus ->
+            5 / 6

@@ -1,14 +1,14 @@
 module Climb.Systems.Fr exposing (..)
 
-import Climb.Levels.Mod exposing (..)
 import Climb.Levels.ABC as ABC
 import Climb.Levels.ABCPlus as Lvl exposing (..)
+import Climb.Levels.Mod as Mod
 
 
 type alias Grade =
     { n : Int
     , cat : Lvl.Level
-    , mod : DifficultyMod
+    , mod : Mod.DifficultyMod
     }
 
 
@@ -20,7 +20,7 @@ show grade =
     in
     if n <= 3 then
         -- Easy grades 1 to 3 ignore category
-        case showModSoftHard mod of
+        case Mod.showModSoftHard mod of
             Just suffix ->
                 String.fromInt n ++ suffix
 
@@ -29,7 +29,7 @@ show grade =
 
     else if n <= 5 then
         -- Intermediate grades 4 and 5 ignore the plus modifier
-        case ( showModSoftHard mod, Lvl.toABC cat ) of
+        case ( Mod.showModSoftHard mod, Lvl.toABC cat ) of
             ( Just suffix, lvl ) ->
                 String.fromInt n ++ ABC.show lvl ++ suffix
 
@@ -67,7 +67,7 @@ toLinearScale _ =
 
 zero : Grade
 zero =
-    Grade 1 A6 Base
+    Grade 1 A6 Mod.Base
 
 
 next : Grade -> Grade
@@ -101,3 +101,12 @@ next { n, cat, mod } =
 
     else
         Grade (n + 1) A6 mod
+
+
+order : Grade -> Grade -> Order
+order a b =
+    let
+        toTuple { n, cat, mod } =
+            ( n, Lvl.toLinearScale cat, Mod.toLinearScale mod )
+    in
+    compare (toTuple a) (toTuple b)

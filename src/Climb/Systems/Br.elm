@@ -1,15 +1,15 @@
 module Climb.Systems.Br exposing (..)
 
 import Climb.Levels.ABC as Lvl
+import Climb.Levels.Mod as Mod
 import Climb.Systems.Common exposing (..)
-import Climb.Levels.Mod exposing (..)
 import Climb.Util.Roman exposing (..)
 
 
 type alias Grade =
     { n : Int
     , cat : Lvl.Level
-    , mod : DifficultyMod
+    , mod : Mod.DifficultyMod
     }
 
 
@@ -19,17 +19,17 @@ show grade =
         { n, cat, mod } =
             grade
     in
-    if n == 6 && cat /= Lvl.A && mod == HalfwayNext then
+    if n == 6 && cat /= Lvl.A && mod == Mod.HalfwayNext then
         -- Special cases
         "6sup/7a"
 
-    else if n <= 6 && mod == HalfwayNext && cat == Lvl.A then
+    else if n <= 6 && mod == Mod.HalfwayNext && cat == Lvl.A then
         -- Easy grades (I to VIsup) treat Lvl.B3 and Lvl.C3 as
         -- equivalent and correspond to the "sup" modifier
         toRoman n ++ "/sup"
 
     else if n <= 6 then
-        case showModSoftHard mod of
+        case Mod.showModSoftHard mod of
             Just suffix ->
                 toRoman n ++ select (cat == Lvl.A) "" "sup" ++ suffix
 
@@ -38,7 +38,7 @@ show grade =
 
     else
         -- Grades such as 7a, 9c, etc are more regular
-        case showModSoftHard mod of
+        case Mod.showModSoftHard mod of
             Just suffix ->
                 String.fromInt n ++ Lvl.show cat ++ suffix
 
@@ -58,7 +58,7 @@ parse _ =
 
 simplify : Grade -> Grade
 simplify { n, cat } =
-    Grade n cat Base
+    Grade n cat Mod.Base
 
 
 fromLinearScale : Float -> Grade
@@ -73,7 +73,7 @@ toLinearScale _ =
 
 zero : Grade
 zero =
-    { n = 1, cat = Lvl.A, mod = Base }
+    { n = 1, cat = Lvl.A, mod = Mod.Base }
 
 
 next : Grade -> Grade
@@ -91,3 +91,12 @@ next { n, cat, mod } =
 
             Nothing ->
                 Grade (n + 1) Lvl.A mod
+
+
+order : Grade -> Grade -> Order
+order a b =
+    let
+        toTuple { n, cat, mod } =
+            ( n, Lvl.toLinearScale cat, Mod.toLinearScale mod )
+    in
+    compare (toTuple a) (toTuple b)

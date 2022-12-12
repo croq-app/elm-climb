@@ -1,22 +1,12 @@
-module Climb.Systems.Hueco exposing (Grade, fromLinearScale, parse, show, simplify, toLinearScale, zero, next)
+module Climb.Systems.Hueco exposing (Grade, fromLinearScale, next, parse, show, simplify, toLinearScale, zero, order)
 
-import Climb.Levels.Mod exposing (..)
-import Parser exposing (..)
+import Climb.Levels.Mod as Mod
 import Climb.Util.Parser exposing (flattenResult, modifierSuffixSlash, positiveInt)
+import Parser exposing (..)
 
 
 type Grade
-    = Grade Int DifficultyMod
-
-
-zero : Grade
-zero =
-    Grade 0 Base
-
-
-next : Grade -> Grade
-next (Grade n mod) =
-    Grade (n + 1) mod
+    = Grade Int Mod.DifficultyMod
 
 
 show : Grade -> String
@@ -30,16 +20,16 @@ show (Grade n mod) =
                 "V" ++ String.fromInt n
     in
     case mod of
-        Base ->
+        Mod.Base ->
             base
 
-        Soft ->
+        Mod.Soft ->
             base ++ "-"
 
-        Hard ->
+        Mod.Hard ->
             base ++ "+"
 
-        HalfwayNext ->
+        Mod.HalfwayNext ->
             base ++ "/" ++ String.fromInt (n + 1)
 
 
@@ -53,7 +43,7 @@ parse st =
 
 simplify : Grade -> Grade
 simplify (Grade n _) =
-    Grade n Base
+    Grade n Mod.Base
 
 
 {-| Convert to the floating point universal scale
@@ -69,7 +59,7 @@ saving in a database.
 -}
 toLinearScale : Grade -> Float
 toLinearScale (Grade n mod) =
-    toFloat n + modToLinearScale mod
+    toFloat n + Mod.toLinearScale mod
 
 
 fromLinearScale : Float -> Grade
@@ -82,7 +72,7 @@ fromLinearScale x =
             x - toFloat n
 
         ( m, mod ) =
-            modFromLinearScale n err
+            Mod.fromLinearScale n err
     in
     Grade m mod
 
@@ -97,7 +87,7 @@ parser =
 
                 Err m ->
                     if m == n + 1 then
-                        Ok <| Grade n HalfwayNext
+                        Ok <| Grade n Mod.HalfwayNext
 
                     else
                         Err "not a sequence of grades"
@@ -108,3 +98,25 @@ parser =
             |= oneOf [ succeed -1 |. symbol "b", positiveInt ]
             |= modifierSuffixSlash positiveInt
         )
+
+
+zero : Grade
+zero =
+    Grade 0 Mod.Base
+
+
+next : Grade -> Grade
+next (Grade n mod) =
+    Grade (n + 1) mod
+
+
+order : Grade -> Grade -> Order
+order (Grade n modn) (Grade m modm) =
+    if n > m then
+        GT
+
+    else if n == m then
+        Mod.order modn modm
+
+    else
+        LT
