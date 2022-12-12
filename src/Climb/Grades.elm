@@ -47,7 +47,7 @@ Required as the first argument of may functions in order to specify the desired 
 
 ## Special methods
 
-@docs zeroGrade compareGrades
+@docs zeroGrade, compareGrades
 
 -}
 
