@@ -1,10 +1,10 @@
 module Climb.Grades exposing
-    ( System, VGrade, Font, Fr, Us, Br
-    , vgrade, font, fr, us, br
+    ( System, Boulder, Route, VGrade, Font, Fr, Us, Br
+    , boulder, route, vgrade, font, fr, us, br
     , showGrade, toAnyGrade, toFont, toVGrade
     , parseGrade, parseGrade_, fromAnyGrade, fromVGrade, fromFont, toLinearScale, fromLinearScale
     , simplifyGrade, nextGrade
-    , compareGrades, zeroGrade
+    , zeroGrade, compareGrades
     )
 
 {-| Climbing grades representation and conversion
@@ -20,14 +20,14 @@ Conversions are based in two tables
 
 ## Types
 
-@docs System, VGrade, Font, Fr, Us, Br
+@docs System, Boulder, Route, VGrade, Font, Fr, Us, Br
 
 
 ## Grading systems
 
 Required as the first argument of may functions in order to specify the desired grading system.
 
-@docs vgrade, font, fr, us, br
+@docs boulder, route, vgrade, font, fr, us, br
 
 
 ## Converting to strings
@@ -51,6 +51,8 @@ Required as the first argument of may functions in order to specify the desired 
 
 -}
 
+import Climb.Systems.AnyBoulder as Boulder
+import Climb.Systems.AnyRoute as Route
 import Climb.Systems.Br as Br
 import Climb.Systems.Font as Font
 import Climb.Systems.Fr as Fr
@@ -60,16 +62,29 @@ import Climb.Systems.Us as Us
 
 {-| Collect methods for a GradeT pseudo-typeclass
 -}
-type alias System t =
-    { fromLinearScale : Float -> t
-    , toLinearScale : t -> Float
-    , show : t -> String
-    , parse : String -> Maybe t
-    , simplify : t -> t
-    , zero : t
-    , next : t -> t
-    , order : t -> t -> Order
-    }
+type System t
+    = System
+        { fromLinearScale : Float -> t
+        , toLinearScale : t -> Float
+        , show : t -> String
+        , parse : String -> Maybe t
+        , simplify : t -> t
+        , zero : t
+        , next : t -> t
+        , order : t -> t -> Order
+        }
+
+
+{-| Generic Route grade. Sum type of all supported grades
+-}
+type alias Route =
+    Route.Grade
+
+
+{-| Generic Boulder grade. Sum type of all supported grades
+-}
+type alias Boulder =
+    Boulder.Grade
 
 
 {-| American V-grades system
@@ -96,85 +111,122 @@ type alias Fr =
     Fr.Grade
 
 
-{-| French system for grading routes
+{-| Brazilian system for grading routes
 -}
 type alias Br =
     Br.Grade
+
+
+{-| Generic bouldering grade.
+-}
+boulder : System Boulder
+boulder =
+    System
+        { fromLinearScale = Boulder.fromLinearScale
+        , toLinearScale = Boulder.toLinearScale
+        , show = Boulder.show
+        , parse = Boulder.parse
+        , simplify = Boulder.simplify
+        , zero = Boulder.zero
+        , next = Boulder.next
+        , order = Boulder.order
+        }
+
+
+{-| Generic route grade.
+-}
+route : System Route
+route =
+    System
+        { fromLinearScale = Route.fromLinearScale
+        , toLinearScale = Route.toLinearScale
+        , show = Route.show
+        , parse = Route.parse
+        , simplify = Route.simplify
+        , zero = Route.zero
+        , next = Route.next
+        , order = Route.order
+        }
 
 
 {-| The Hueco/Vermin system used for bouldering in the USA, .i.e., the v-grades.
 -}
 vgrade : System VGrade
 vgrade =
-    { fromLinearScale = Hueco.fromLinearScale
-    , toLinearScale = Hueco.toLinearScale
-    , show = Hueco.show
-    , parse = Hueco.parse
-    , simplify = Hueco.simplify
-    , zero = Hueco.zero
-    , next = Hueco.next
-    , order = Hueco.order
-    }
+    System
+        { fromLinearScale = Hueco.fromLinearScale
+        , toLinearScale = Hueco.toLinearScale
+        , show = Hueco.show
+        , parse = Hueco.parse
+        , simplify = Hueco.simplify
+        , zero = Hueco.zero
+        , next = Hueco.next
+        , order = Hueco.order
+        }
 
 
 {-| French Fontainbleau system for bouldering.
 -}
 font : System Font
 font =
-    { fromLinearScale = Font.fromLinearScale
-    , toLinearScale = Font.toLinearScale
-    , show = Font.show
-    , parse = Font.parse
-    , simplify = Font.simplify
-    , zero = Font.zero
-    , next = Font.next
-    , order = Font.order
-    }
+    System
+        { fromLinearScale = Font.fromLinearScale
+        , toLinearScale = Font.toLinearScale
+        , show = Font.show
+        , parse = Font.parse
+        , simplify = Font.simplify
+        , zero = Font.zero
+        , next = Font.next
+        , order = Font.order
+        }
 
 
 {-| The Yosemite Decimal System used in the USA.
 -}
 us : System Us
 us =
-    { fromLinearScale = Us.fromLinearScale
-    , toLinearScale = Us.toLinearScale
-    , show = Us.show
-    , parse = Us.parse
-    , simplify = Us.simplify
-    , zero = Us.zero
-    , next = Us.next
-    , order = Us.order
-    }
+    System
+        { fromLinearScale = Us.fromLinearScale
+        , toLinearScale = Us.toLinearScale
+        , show = Us.show
+        , parse = Us.parse
+        , simplify = Us.simplify
+        , zero = Us.zero
+        , next = Us.next
+        , order = Us.order
+        }
 
 
 {-| The French system.
 -}
 fr : System Fr
 fr =
-    { fromLinearScale = Fr.fromLinearScale
-    , toLinearScale = Fr.toLinearScale
-    , show = Fr.show
-    , parse = Fr.parse
-    , simplify = Fr.simplify
-    , zero = Fr.zero
-    , next = Fr.next
-    , order = Fr.order
-    }
+    System
+        { fromLinearScale = Fr.fromLinearScale
+        , toLinearScale = Fr.toLinearScale
+        , show = Fr.show
+        , parse = Fr.parse
+        , simplify = Fr.simplify
+        , zero = Fr.zero
+        , next = Fr.next
+        , order = Fr.order
+        }
 
 
 {-| The Brazillian system.
 -}
 br : System Br
 br =
-    { fromLinearScale = Br.fromLinearScale
-    , toLinearScale = Br.toLinearScale
-    , show = Br.show
-    , parse = Br.parse
-    , simplify = Br.simplify
-    , zero = Br.zero
-    , next = Br.next
-    , order = Br.order
-    }
+    System
+        { fromLinearScale = Br.fromLinearScale
+        , toLinearScale = Br.toLinearScale
+        , show = Br.show
+        , parse = Br.parse
+        , simplify = Br.simplify
+        , zero = Br.zero
+        , next = Br.next
+        , order = Br.order
+        }
 
 
 
@@ -186,7 +238,7 @@ br =
 {-| Render grade as a string
 -}
 showGrade : System a -> a -> String
-showGrade tt =
+showGrade (System tt) =
     tt.show
 
 
@@ -196,13 +248,13 @@ The boolean argument tells if the final grade should be simplified or
 not in the final rendering.
 
 -}
-toAnyGrade : System dest -> System a -> Bool -> a -> String
-toAnyGrade destT tt isSimple a =
+toAnyGrade : System a -> System b -> Bool -> b -> String
+toAnyGrade ss tt isSimple a =
     a
-        |> tt.toLinearScale
-        |> destT.fromLinearScale
-        |> askSimplify_ destT isSimple
-        |> destT.show
+        |> toLinearScale tt
+        |> fromLinearScale ss
+        |> askSimplify_ ss isSimple
+        |> showGrade ss
 
 
 {-| Alias to `toGrade vv`
@@ -227,7 +279,7 @@ which is 7c+ in Fontainbleau scale.
 
 -}
 fromLinearScale : System a -> Float -> a
-fromLinearScale tt x =
+fromLinearScale (System tt) x =
     tt.fromLinearScale x
 
 
@@ -243,17 +295,17 @@ saving in a database.
 
 -}
 toLinearScale : System a -> a -> Float
-toLinearScale tt a =
+toLinearScale (System tt) a =
     tt.toLinearScale a
 
 
 {-| Try to read string in the src format.
 -}
-fromAnyGrade : System src -> System a -> String -> Maybe a
-fromAnyGrade srcT tt st =
+fromAnyGrade : System a -> System b -> String -> Maybe b
+fromAnyGrade ss tt st =
     st
-        |> srcT.parse
-        |> Maybe.map (\a -> a |> srcT.toLinearScale |> tt.fromLinearScale)
+        |> parseGrade ss
+        |> Maybe.map (\a -> a |> toLinearScale ss |> fromLinearScale tt)
 
 
 {-| Alias to `fromGrade vv`
@@ -276,7 +328,7 @@ fromFont =
 
 -}
 parseGrade : System a -> String -> Maybe a
-parseGrade tt st =
+parseGrade (System tt) st =
     tt.parse st
 
 
@@ -290,7 +342,7 @@ never be used to handle user input.
 -}
 parseGrade_ : System a -> String -> a
 parseGrade_ tt st =
-    parseGrade tt st |> Maybe.withDefault tt.zero
+    parseGrade tt st |> Maybe.withDefault (zeroGrade tt)
 
 
 {-| Remove modifiers from grade
@@ -301,14 +353,14 @@ parseGrade_ tt st =
 
 -}
 simplifyGrade : System a -> a -> a
-simplifyGrade tt a =
+simplifyGrade (System tt) a =
     tt.simplify a
 
 
 {-| Next full grade ignoring modifiers
 -}
 nextGrade : System a -> a -> a
-nextGrade tt g =
+nextGrade (System tt) g =
     tt.next g
 
 
@@ -318,7 +370,7 @@ Different scales may start from different levels
 
 -}
 zeroGrade : System a -> a
-zeroGrade tt =
+zeroGrade (System tt) =
     tt.zero
 
 
@@ -328,7 +380,7 @@ This can be used in sorting algorithms like `List.sortWith`
 
 -}
 compareGrades : System a -> a -> a -> Order
-compareGrades tt a b =
+compareGrades (System tt) a b =
     tt.order a b
 
 
