@@ -8,12 +8,12 @@ type Grade
 
 
 show : Grade -> String
-show g =
-    ""
+show _ =
+    "#todo"
 
 
 parse : String -> Maybe Grade
-parse st =
+parse _ =
     Nothing
 
 
@@ -23,12 +23,12 @@ simplify g =
 
 
 fromLinearScale : Float -> Grade
-fromLinearScale x =
+fromLinearScale _ =
     zero
 
 
 toLinearScale : Grade -> Float
-toLinearScale g =
+toLinearScale _ =
     0.0
 
 

@@ -7,7 +7,7 @@ import Fuzz exposing (..)
 import Test exposing (..)
 
 
-sequenceFromZero : GradeT a -> String -> String -> Test
+sequenceFromZero : System a -> String -> String -> Test
 sequenceFromZero tt descr spec =
     let
         seq =
@@ -25,7 +25,7 @@ sequenceFromZero tt descr spec =
 suite : Test
 suite =
     describe "zero/next sequence"
-        [ sequenceFromZero vv "Hueco (boulder)" "VB V1 V2 V3 V4 V5 V6 V7 V8 V9 V10"
+        [ sequenceFromZero vgrade "Hueco (boulder)" "VB V1 V2 V3 V4 V5 V6 V7 V8 V9 V10"
         , sequenceFromZero font "Font (boulder)" "1 2 3 4 4+ 5 5+ 6a 6a+ 6b 6b+ 6c 6c+ 7a"
         , sequenceFromZero us "US" "1 2 3 4 5.0 5.1 5.2 5.3 5.4 5.5 5.6 5.7 5.8 5.9 5.10a 5.10b 5.10c 5.10d 5.11a"
         , sequenceFromZero fr "FR" "1 2 3 4a 4b 4c 5a 5b 5c 6a 6a+ 6b 6b+ 6c 6c+ 7a"

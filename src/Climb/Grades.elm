@@ -1,11 +1,53 @@
-module Climb.Grades exposing (..)
+module Climb.Grades exposing
+    ( System, VGrade, Font, Fr, Us, Br
+    , vgrade, font, fr, us, br
+    , showGrade, toAnyGrade, toFont, toVGrade
+    , parseGrade, parseGrade_, fromAnyGrade, fromVGrade, fromFont, toLinearScale, fromLinearScale
+    , simplifyGrade, nextGrade
+    , zeroGrade
+    )
 
 {-| Climbing grades representation and conversion
 
 
 ## Reference
 
-Conversions are based in two pages <https://en.wikipedia.org/wiki/Grade_(bouldering)>
+Conversions are based in two tables
+
+  - <https://en.wikipedia.org/wiki/Grade_(bouldering)>
+  - <https://en.wikipedia.org/wiki/Grade_(climbing)>
+
+
+## Types
+
+@docs System, VGrade, Font, Fr, Us, Br
+
+
+## Grading systems
+
+Required as the first argument of may functions in order to specify the desired grading system.
+
+@docs vgrade, font, fr, us, br
+
+
+## Converting to strings
+
+@docs showGrade, toAnyGrade, toFont, toVGrade
+
+
+## Parsing and converting
+
+@docs parseGrade, parseGrade_, fromAnyGrade, fromVGrade, fromFont, toLinearScale, fromLinearScale
+
+
+## Transforming grades
+
+@docs simplifyGrade, nextGrade
+
+
+## Special methods
+
+@docs zeroGrade
 
 -}
 
@@ -18,7 +60,7 @@ import Climb.Systems.Us as Us
 
 {-| Collect methods for a GradeT pseudo-typeclass
 -}
-type alias GradeT t =
+type alias System t =
     { fromLinearScale : Float -> t
     , toLinearScale : t -> Float
     , show : t -> String
@@ -29,30 +71,40 @@ type alias GradeT t =
     }
 
 
-type alias Hueco =
+{-| American V-grades system
+-}
+type alias VGrade =
     Hueco.Grade
 
 
+{-| Fontainebleau system
+-}
 type alias Font =
     Font.Grade
 
 
+{-| American Decimal system for grading routes
+-}
 type alias Us =
     Us.Grade
 
 
+{-| French system for grading routes
+-}
 type alias Fr =
     Fr.Grade
 
 
+{-| French system for grading routes
+-}
 type alias Br =
     Br.Grade
 
 
 {-| The Hueco/Vermin system used for bouldering in the USA, .i.e., the v-grades.
 -}
-vv : GradeT Hueco.Grade
-vv =
+vgrade : System VGrade
+vgrade =
     { fromLinearScale = Hueco.fromLinearScale
     , toLinearScale = Hueco.toLinearScale
     , show = Hueco.show
@@ -65,7 +117,7 @@ vv =
 
 {-| French Fontainbleau system for bouldering.
 -}
-font : GradeT Font.Grade
+font : System Font
 font =
     { fromLinearScale = Font.fromLinearScale
     , toLinearScale = Font.toLinearScale
@@ -79,7 +131,7 @@ font =
 
 {-| The Yosemite Decimal System used in the USA.
 -}
-us : GradeT Us.Grade
+us : System Us
 us =
     { fromLinearScale = Us.fromLinearScale
     , toLinearScale = Us.toLinearScale
@@ -93,7 +145,7 @@ us =
 
 {-| The French system.
 -}
-fr : GradeT Fr.Grade
+fr : System Fr
 fr =
     { fromLinearScale = Fr.fromLinearScale
     , toLinearScale = Fr.toLinearScale
@@ -107,7 +159,7 @@ fr =
 
 {-| The Brazillian system.
 -}
-br : GradeT Br.Grade
+br : System Br
 br =
     { fromLinearScale = Br.fromLinearScale
     , toLinearScale = Br.toLinearScale
@@ -125,6 +177,42 @@ br =
 -------------------------------------------------------------------------------
 
 
+{-| Render grade as a string
+-}
+showGrade : System a -> a -> String
+showGrade tt =
+    tt.show
+
+
+{-| Render Bouldering grade in destT format.
+
+The boolean argument tells if the final grade should be simplified or
+not in the final rendering.
+
+-}
+toAnyGrade : System dest -> System a -> Bool -> a -> String
+toAnyGrade destT tt isSimple a =
+    a
+        |> tt.toLinearScale
+        |> destT.fromLinearScale
+        |> askSimplify_ destT isSimple
+        |> destT.show
+
+
+{-| Alias to `toGrade vv`
+-}
+toVGrade : System a -> Bool -> a -> String
+toVGrade =
+    toAnyGrade vgrade
+
+
+{-| Alias to `toGrade font`
+-}
+toFont : System a -> Bool -> a -> String
+toFont =
+    toAnyGrade font
+
+
 {-| Convert from the floating point universal scale
 
 For bouldering, the floating point scale is based in the American
@@ -132,7 +220,7 @@ Hueco/Vermin system. i.e. `fromLinearScale 10.0` refers to V10,
 which is 7c+ in Fontainbleau scale.
 
 -}
-fromLinearScale : GradeT a -> Float -> a
+fromLinearScale : System a -> Float -> a
 fromLinearScale tt x =
     tt.fromLinearScale x
 
@@ -148,51 +236,15 @@ saving in a database.
             |> Hueco.fromLinearScale
 
 -}
-toLinearScale : GradeT a -> a -> Float
+toLinearScale : System a -> a -> Float
 toLinearScale tt a =
     tt.toLinearScale a
 
 
-{-| Render grade as a string
+{-| Try to read string in the src format.
 -}
-showGrade : GradeT a -> a -> String
-showGrade tt =
-    tt.show
-
-
-{-| Render Bouldering grade in destT format.
-
-The boolean argument tells if the final grade should be simplified or
-not in the final rendering.
-
--}
-toGrade : GradeT dest -> GradeT a -> Bool -> a -> String
-toGrade destT tt isSimple a =
-    a
-        |> tt.toLinearScale
-        |> destT.fromLinearScale
-        |> askSimplify_ destT isSimple
-        |> destT.show
-
-
-{-| Alias to `toGrade vv`
--}
-toVGrade : GradeT a -> Bool -> a -> String
-toVGrade =
-    toGrade vv
-
-
-{-| Alias to `toGrade font`
--}
-toFont : GradeT a -> Bool -> a -> String
-toFont =
-    toGrade font
-
-
-{-| Try to read string in the srcT format.
--}
-fromGrade : GradeT src -> GradeT a -> String -> Maybe a
-fromGrade srcT tt st =
+fromAnyGrade : System src -> System a -> String -> Maybe a
+fromAnyGrade srcT tt st =
     st
         |> srcT.parse
         |> Maybe.map (\a -> a |> srcT.toLinearScale |> tt.fromLinearScale)
@@ -200,16 +252,16 @@ fromGrade srcT tt st =
 
 {-| Alias to `fromGrade vv`
 -}
-fromVGrade : GradeT a -> String -> Maybe a
+fromVGrade : System a -> String -> Maybe a
 fromVGrade =
-    fromGrade vv
+    fromAnyGrade vgrade
 
 
 {-| Alias to `fromGrade font`
 -}
-fromFontGrade : GradeT a -> String -> Maybe a
-fromFontGrade =
-    fromGrade font
+fromFont : System a -> String -> Maybe a
+fromFont =
+    fromAnyGrade font
 
 
 {-| Parse string representing grade
@@ -217,7 +269,7 @@ fromFontGrade =
     parseGrade vv "V10/11" ==> Just (Grade 10 HalfwayNext)
 
 -}
-parseGrade : GradeT a -> String -> Maybe a
+parseGrade : System a -> String -> Maybe a
 parseGrade tt st =
     tt.parse st
 
@@ -230,7 +282,7 @@ never be used to handle user input.
     parse_ vv "V10/11" ==> Grade 10 HalfwayNext
 
 -}
-parseGrade_ : GradeT a -> String -> a
+parseGrade_ : System a -> String -> a
 parseGrade_ tt st =
     parseGrade tt st |> Maybe.withDefault tt.zero
 
@@ -242,14 +294,14 @@ parseGrade_ tt st =
         ==> Grade 10 Base
 
 -}
-simplifyGrade : GradeT a -> a -> a
+simplifyGrade : System a -> a -> a
 simplifyGrade tt a =
     tt.simplify a
 
 
 {-| Next full grade ignoring modifiers
 -}
-nextGrade : GradeT a -> a -> a
+nextGrade : System a -> a -> a
 nextGrade tt g =
     tt.next g
 
@@ -259,7 +311,7 @@ nextGrade tt g =
 Different scales may start from different levels
 
 -}
-zeroGrade : GradeT a -> a
+zeroGrade : System a -> a
 zeroGrade tt =
     tt.zero
 
@@ -270,7 +322,7 @@ zeroGrade tt =
 -------------------------------------------------------------------------------
 
 
-askSimplify_ : GradeT c -> Bool -> c -> c
+askSimplify_ : System c -> Bool -> c -> c
 askSimplify_ tt isSimple a =
     if isSimple then
         simplifyGrade tt a

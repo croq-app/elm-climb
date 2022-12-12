@@ -52,7 +52,7 @@ show grade =
 
 
 parse : String -> Maybe Grade
-parse st =
+parse _ =
     Nothing
 
 
@@ -62,12 +62,12 @@ simplify { n, cat } =
 
 
 fromLinearScale : Float -> Grade
-fromLinearScale x =
+fromLinearScale _ =
     zero
 
 
 toLinearScale : Grade -> Float
-toLinearScale g =
+toLinearScale _ =
     0.0
 
 
